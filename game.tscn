@@ -1,7 +1,8 @@
-[gd_scene load_steps=54 format=4 uid="uid://duw70dcgno4q1"]
+[gd_scene load_steps=55 format=4 uid="uid://duw70dcgno4q1"]
 
 [ext_resource type="Shader" uid="uid://bmx4qsahmanvn" path="res://Shaders/edge_detection.gdshader" id="1_80nbo"]
 [ext_resource type="Script" uid="uid://cqha06fsf1hlf" path="res://Scripts/CameraRig.gd" id="1_feb5d"]
+[ext_resource type="Script" uid="uid://b6vb05b1qo2x1" path="res://PixelScaler.gd" id="1_ryrav"]
 [ext_resource type="Script" uid="uid://d183615equd5h" path="res://Scripts/Camera3DTexelSnapped.gd" id="2_fc0e3"]
 [ext_resource type="Script" uid="uid://b0cbm2ht5fe8q" path="res://Scripts/PixelDisplay.gd" id="4_fc0e3"]
 [ext_resource type="Shader" uid="uid://davhsxcovhw08" path="res://Shaders/pixel_art_upscaler.gdshader" id="5_7jktm"]
@@ -519,14 +520,14 @@ shader = ExtResource("1_80nbo")
 shader_parameter/lightIntensity = 1.25
 shader_parameter/lineAlpha = 0.7
 shader_parameter/useLighting = false
-shader_parameter/lineHighlight = 0.5
-shader_parameter/lineShadow = 1.1
+shader_parameter/lineHighlight = 0.16
+shader_parameter/lineShadow = 0.88
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ryrav"]
 shader = ExtResource("5_7jktm")
 
 [sub_resource type="ViewportTexture" id="ViewportTexture_7jktm"]
-viewport_path = NodePath("SubViewportContainer/SubViewport")
+viewport_path = NodePath("PixelScaler/SubViewportContainer/SubViewport")
 
 [node name="Game" type="Node3D"]
 
@@ -638,31 +639,42 @@ transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 1
 use_collision = true
 material = SubResource("StandardMaterial3D_fc0e3")
 
-[node name="SubViewportContainer" type="SubViewportContainer" parent="."]
+[node name="PixelScaler" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_ryrav")
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="PixelScaler"]
+layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 stretch = true
-stretch_shrink = 6
+stretch_shrink = 4
 
-[node name="SubViewport" type="SubViewport" parent="SubViewportContainer"]
-size = Vector2i(320, 180)
+[node name="SubViewport" type="SubViewport" parent="PixelScaler/SubViewportContainer"]
+handle_input_locally = false
+size = Vector2i(480, 270)
 render_target_update_mode = 4
 
-[node name="CameraRig" type="Node3D" parent="SubViewportContainer/SubViewport"]
+[node name="CameraRig" type="Node3D" parent="PixelScaler/SubViewportContainer/SubViewport"]
 transform = Transform3D(0.70710677, -0.35355338, 0.6123724, 0, 0.8660254, 0.5, -0.70710677, -0.35355338, 0.6123724, 0, 0, 0)
 script = ExtResource("1_feb5d")
 
-[node name="Camera3DTexelSnapped" type="Camera3D" parent="SubViewportContainer/SubViewport/CameraRig"]
+[node name="Camera3DTexelSnapped" type="Camera3D" parent="PixelScaler/SubViewportContainer/SubViewport/CameraRig"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 20)
 projection = 1
 size = 10.0
 far = 100.0
 script = ExtResource("2_fc0e3")
 
-[node name="OutlineShader" type="MeshInstance3D" parent="SubViewportContainer/SubViewport/CameraRig/Camera3DTexelSnapped"]
+[node name="OutlineShader" type="MeshInstance3D" parent="PixelScaler/SubViewportContainer/SubViewport/CameraRig/Camera3DTexelSnapped"]
 transform = Transform3D(0.99999994, 0, 0, 0, 1, 0, 0, -2.9802322e-08, 1, 0, -0.07143164, -11.876272)
 cast_shadow = 0
 extra_cull_margin = 16384.0
@@ -679,7 +691,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("4_fc0e3")
-viewport = NodePath("../SubViewportContainer/SubViewport")
+viewport = NodePath("../PixelScaler/SubViewportContainer/SubViewport")
 sub_pixel_movement_at_integer_scale = true
 metadata/_custom_type_script = "uid://b0cbm2ht5fe8q"
 
