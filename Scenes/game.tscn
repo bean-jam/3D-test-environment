@@ -1,0 +1,94 @@
+[gd_scene load_steps=12 format=3 uid="uid://duw70dcgno4q1"]
+
+[ext_resource type="PackedScene" uid="uid://dcqjk1b1nbkb8" path="res://Scenes/test_world.tscn" id="1_1l0tm"]
+[ext_resource type="Script" uid="uid://b6vb05b1qo2x1" path="res://Scripts/PixelScaler.gd" id="2_v158k"]
+[ext_resource type="Script" uid="uid://cqha06fsf1hlf" path="res://Scripts/CameraRig.gd" id="3_h4fw4"]
+[ext_resource type="Script" uid="uid://d183615equd5h" path="res://Scripts/Camera3DTexelSnapped.gd" id="4_ldgsr"]
+[ext_resource type="Shader" uid="uid://bmx4qsahmanvn" path="res://Shaders/edge_detection.gdshader" id="5_o5yvi"]
+[ext_resource type="Script" uid="uid://b0cbm2ht5fe8q" path="res://Scripts/PixelDisplay.gd" id="6_rku1e"]
+[ext_resource type="Shader" uid="uid://davhsxcovhw08" path="res://Shaders/pixel_art_upscaler.gdshader" id="7_rfjv2"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_e2o6t"]
+flip_faces = true
+size = Vector2(2, 2)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_feb5d"]
+render_priority = 0
+shader = ExtResource("5_o5yvi")
+shader_parameter/lightIntensity = 1.25
+shader_parameter/lineAlpha = 0.7
+shader_parameter/useLighting = false
+shader_parameter/lineHighlight = 0.16
+shader_parameter/lineShadow = 0.88
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ryrav"]
+shader = ExtResource("7_rfjv2")
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_7jktm"]
+viewport_path = NodePath("PixelScaler/SubViewportContainer/SubViewport")
+
+[node name="Game" type="Node3D"]
+
+[node name="World" parent="." instance=ExtResource("1_1l0tm")]
+
+[node name="PixelScaler" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2_v158k")
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="PixelScaler"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+stretch = true
+stretch_shrink = 4
+
+[node name="SubViewport" type="SubViewport" parent="PixelScaler/SubViewportContainer"]
+handle_input_locally = false
+size = Vector2i(480, 270)
+render_target_update_mode = 4
+
+[node name="CameraRig" type="Node3D" parent="PixelScaler/SubViewportContainer/SubViewport"]
+transform = Transform3D(0.70710677, -0.35355338, 0.6123724, 0, 0.8660254, 0.5, -0.70710677, -0.35355338, 0.6123724, 0, 0, 0)
+script = ExtResource("3_h4fw4")
+
+[node name="Camera3DTexelSnapped" type="Camera3D" parent="PixelScaler/SubViewportContainer/SubViewport/CameraRig"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 20)
+projection = 1
+size = 10.0
+far = 100.0
+script = ExtResource("4_ldgsr")
+
+[node name="OutlineShader" type="MeshInstance3D" parent="PixelScaler/SubViewportContainer/SubViewport/CameraRig/Camera3DTexelSnapped"]
+transform = Transform3D(0.99999994, 0, 0, 0, 1, 0, 0, -2.9802322e-08, 1, 0, -0.07143164, -11.876272)
+cast_shadow = 0
+extra_cull_margin = 16384.0
+mesh = SubResource("QuadMesh_e2o6t")
+skeleton = NodePath("")
+surface_material_override/0 = SubResource("ShaderMaterial_feb5d")
+
+[node name="PixelDisplay" type="Control" parent="." node_paths=PackedStringArray("viewport")]
+texture_filter = 2
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("6_rku1e")
+viewport = NodePath("../PixelScaler/SubViewportContainer/SubViewport")
+sub_pixel_movement_at_integer_scale = true
+metadata/_custom_type_script = "uid://b0cbm2ht5fe8q"
+
+[node name="Sprite2D" type="Sprite2D" parent="PixelDisplay"]
+texture_filter = 2
+material = SubResource("ShaderMaterial_ryrav")
+texture = SubResource("ViewportTexture_7jktm")
+centered = false
